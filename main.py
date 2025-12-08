@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import random
 import os
+from PIL import Image, ImageTk
 
 class Memory:
     def __init__(self, root):
@@ -36,3 +37,44 @@ class Memory:
         except Exception as e:
             print("Ошибка инициализации")
             self.show_error_mesage("initialize_variables", e)
+
+    def load_card_images(self):
+        try:
+            print("Загрузка изображений")
+            back_path = os.path.join("cards", "car_back.png")
+            if os.path.exists(back_path):
+                try:
+                    img = img.resize((80, 80))
+                    self.card_back_image = ImageTk.PhotoImage(img)
+                    print("Загружено")
+        except Exception as e:
+            print(f"Не удалось загрузить рубашку {e}")
+
+        self.card_images = []
+        card_number = 1
+
+        while True:
+            front_path = os.path.join("cards", f"card_{card_number}.png")
+            if not os.path.exists(front_path):
+                break
+
+            try:
+                img = Image.open(front_path)
+                img = img.resize((80, 80))
+                tk_img = ImageTk.PhotoImage(img)
+                self.card_images.append(tk_img)
+                card_number += 1
+            except Exception as e:
+                print("Ошибка загрузки")
+                break
+        if len(self.card_images) > 0:
+            self.use_images = True
+            print (f" Загружено {len(self.card_images)} изображений")
+        else:
+            self.use_images = False
+
+            except Exception as e:
+                print("Ошибка загрузки")
+                self.use_images = False
+
+
