@@ -1,14 +1,17 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import random
 import os
 from PIL import Image, ImageTk
+import sys
+
 
 class Memory:
     def __init__(self, root):
         self.root = root
         self.setup_window()
         self.initialize_variables()
+        self.load_card_images()
         self.interface()
         self.start_new_game()
 
@@ -26,13 +29,16 @@ class Memory:
         try:
             self.grid_size = 6
             self.game_active = False
+
             self.cards = []
             self.flipped_cards = []
             self.matched_pairs = 0
             self.total_pairs = 0
             self.moves = 0
+
             self.card_images = []
             self.card_back_image = None
+            self.use_images = True
 
         except Exception as e:
             print("Ошибка инициализации")
@@ -41,6 +47,7 @@ class Memory:
     def load_card_images(self):
         try:
             print("Загрузка изображений")
+
             back_path = os.path.join("cards", "card_back.png")
             if os.path.exists(back_path):
                 try:
@@ -48,13 +55,17 @@ class Memory:
                     img = img.resize((80, 80))
                     self.card_back_image = ImageTk.PhotoImage(img)
                     print("Загружено")
-        except Exception as e:
-            print(f"Не удалось загрузить рубашку {e}")
+                except Exception as e:
+                    print(f"Не удалось загрузить карточку: {e}")
+            else:
+                print("файл не найден в папке")
+                self.card_back_image = None
 
         self.card_images = []
         card_number = 1
+        loaded_count = 0
 
-        while True:
+        while loaded_count < 50:
             front_path = os.path.join("cards", f"card_{card_number}.png")
             if not os.path.exists(front_path):
                 break
@@ -64,10 +75,13 @@ class Memory:
                 img = img.resize((80, 80))
                 tk_img = ImageTk.PhotoImage(img)
                 self.card_images.append(tk_img)
+                loaded_count += 1
                 card_number += 1
             except Exception as e:
                 print("Ошибка загрузки")
                 break
+
+
         if len(self.card_images) > 0:
             self.use_images = True
             print (f" Загружено {len(self.card_images)} изображений")
@@ -125,3 +139,22 @@ class Memory:
         except Exception as e:
             print("Ошибка закрытия игры")
 
+
+def main()
+    try:
+        print("="*50)
+        print("Игра Memory")
+        print("="*50)
+
+        root = tk.Tk()
+
+        game = Memory(root)
+
+        root.mainloop()
+
+    except Exception as e:
+        print(f"Критическая ошибка: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
