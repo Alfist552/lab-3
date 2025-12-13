@@ -16,7 +16,7 @@ class Memory:
         try:
             self.root.title("Memory game")
             self.root.geometry("800x600")
-            self.root.resizatable(True, True)
+            self.root.resizable(True, True)
             self.root.protocol("WM_DELETE_WINDOW",self.on_closing)
         except Exception as e:
             print(f"Произошла ошибка при настройке")
@@ -27,8 +27,8 @@ class Memory:
             self.grid_size = 6
             self.game_active = False
             self.cards = []
-            self.flipped.cards = []
-            self.matched.pairs = 0
+            self.flipped_cards = []
+            self.matched_pairs = 0
             self.total_pairs = 0
             self.moves = 0
             self.card_images = []
@@ -41,9 +41,10 @@ class Memory:
     def load_card_images(self):
         try:
             print("Загрузка изображений")
-            back_path = os.path.join("cards", "car_back.png")
+            back_path = os.path.join("cards", "card_back.png")
             if os.path.exists(back_path):
                 try:
+                    img = Image.open(back_path)
                     img = img.resize((80, 80))
                     self.card_back_image = ImageTk.PhotoImage(img)
                     print("Загружено")
@@ -73,8 +74,33 @@ class Memory:
         else:
             self.use_images = False
 
-            except Exception as e:
-                print("Ошибка загрузки")
-                self.use_images = False
 
+    def interface(self):
+        try:
+            print('Создание интерфейса')
+            main_frame = tk.Frame(self.root, padding = '10')
+            main_frame.pack(fill = tk.BOTH, expand = True)
+
+            title = ttk.Label(
+                main_frame,
+                text = 'Игра "Memory"',
+                font = ("Arial", 24, "bold")
+            )
+            title.pack(pady = 20)
+
+            if self.use_images:
+                mode_text = f"Режим картинки: ({len(self.card_images)} доступно)"
+
+            mode_label = ttk.label(
+                main_frame,
+                text=mode_text,
+                font = ("Arial", 12)
+            )
+            mode_label.pack(pady = 10)
+
+            print("Создание интерфейса")
+
+        except Exception as e:
+            print("Ошибка создания интерфейса")
+            self.show_error_message("interface", e)
 
