@@ -104,3 +104,24 @@ class Memory:
             print("Ошибка создания интерфейса")
             self.show_error_message("interface", e)
 
+    def start_new_game(self):
+        try:
+            print("Начало игры")
+
+            if self.use_images:
+                info = f"Игра {self.grid_size} * {self.grid_size}"
+
+            print (f" {info}")
+
+        except Exception as e:
+            print(f"Ошибка создания игры")
+            self.show_error_message("start_new_game", e)
+
+    def closing_game(self):
+        try:
+            print("Закрытие игры")
+            self.root.quit()
+            self.root.destroy()
+        except Exception as e:
+            print("Ошибка закрытия игры")
+
