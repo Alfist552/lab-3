@@ -13,14 +13,14 @@ class Memory:
         self.initialize_variables()
         self.load_card_images()
         self.show_main_menu()
-        self.start_new_game()
 
     def setup_window(self):
         try:
             self.root.title("Memory game")
-            self.root.geometry("800x600")
+            self.root.geometry("1920x1080")
             self.root.resizable(True, True)
             self.root.protocol("WM_DELETE_WINDOW",self.on_closing)
+            self.root.minsize(850, 800)
         except Exception as e:
             print(f"Произошла ошибка при настройке")
             self.show_error_message("setup_window", e)
@@ -164,6 +164,77 @@ class Memory:
             print(f"Ошибка показа меню: {e}")
             self.show_error_message("show_main_menu", e)
 
+    def show_rules(self):
+        try:
+            for widget in self.root.winfo_children():
+                widget.destroy()
+
+            main_frame = tk.Frame(self.root, bg = 'lightyellow')
+            main_frame.pack(fill = tk.BOTH, expand = True)
+
+            title = tk.Label(
+                main_frame,
+                text="Как играть?",
+                font=("Arial", 28, "bold"),
+                bg="lightyellow",
+                fg="darkorange"
+            )
+            title.pack(pady=30)
+
+            rules_text = """ПРАВИЛА ИГРЫ "MEMORY":
+    
+            1. Цель игры: найти все пары одинаковых карточек.
+            2. На поле 6x6 расположено 36 карточек (18 пар).
+            3. Кликайте по карточкам, чтобы перевернуть их.
+            4. Если две открытые карточки совпадают - они остаются открытыми.
+            5. Если карточки разные - они переворачиваются обратно через 1 секунду.
+            6. Игра заканчивается, когда все пары найдены.
+            7. Старайтесь найти все пары за минимальное количество ходов!
+
+            Good luck!"""
+
+            rules_label = tk.Label(
+                main_frame,
+                text=rules_text,
+                font=("Arial", 14),
+                bg="lightyellow",
+                fg="black",
+                justify="left"
+            )
+            rules_label.pack(pady=20, padx=50)
+
+            back_btn = tk.Button(
+                main_frame,
+                text="В главное меню",
+                font=("Arial", 16),
+                bg="blue",
+                fg="white",
+                width=20,
+                height=2,
+                command=self.show_main_menu
+            )
+            back_btn.pack(pady=30)
+
+        except Exception as e:
+            print(f"Ошибка показа правил: {e}")
+            self.show_error_message("show_rules", e)
+
+    def start_game_from_menu(self):
+        try:
+            if not self.use_images:
+                messagebox.showerror("Ошибка", "Недостаточно картинок для начала игры!")
+                return
+
+            self.moves = 0
+            self.matched_pairs = 0
+            self.flipped_cards = []
+            self.can_click = True
+
+            self.create_game_board()
+        except Exception as e:
+            print(f"Ошибка начала игры: {e}")
+            self.show_error_message("start_game_from_menu", e)
+
     def create_game_board(self):
         try:
             if not self.use_images:
@@ -175,42 +246,41 @@ class Memory:
                 widget.destroy()
 
             main_frame = tk.Frame(self.root)
-            main_frame.grid(row=0, column=0, sticky="nsew")
+            main_frame.pack(fill = tk.BOTH, expand = True)
+
+            center_frame = tk.Frame(main_frame)
+            center_frame.pack(expand=True)
 
             self.root.grid_rowconfigure(0, weight=1)
             self.root.grid_columnconfigure(0, weight=1)
 
             title = tk.Label(
-                main_frame,
+                center_frame,
                 text='Игра "Memory"',
                 font=("Arial", 24, "bold")
             )
-            title.grid(row=0, column=0, pady=10, columnspan=self.grid_size)
+            title.pack(pady=10)
 
             self.moves_label = tk.Label(
-                main_frame,
+                center_frame,
                 text=f"Ходы: {self.moves}",
                 font=("Arial", 14)
             )
-            self.moves_label.grid(row=1, column=0, pady=5, columnspan=self.grid_size)
+            self.moves_label.pack(pady=5)
 
-            self.game_frame = tk.Frame(main_frame)
-            self.game_frame.grid(row=2, column=0, pady=20, columnspan=self.grid_size)
+            self.game_frame = tk.Frame(center_frame)
+            self.game_frame.pack(pady=20)
 
             menu_btn = tk.Button(
-                main_frame,
+                center_frame,
                 text="В меню",
                 font=("Arial", 12),
                 command=self.show_main_menu
             )
 
-            menu_btn.grid(row=3, column=0, pady=10, columnspan=self.grid_size)
+            menu_btn.pack(pady=10)
 
             self.prepare_cards()
-
-            for i in range(self.grid_size):
-                self.game_frame.grid_rowconfigure(i, weight=1)
-                self.game_frame.grid_columnconfigure(i, weight=1)
 
             self.card_buttons = []
             for row in range(self.grid_size):
@@ -291,6 +361,8 @@ class Memory:
         btn2 = self.card_buttons[row2][col2]
 
         self.moves += 1
+
+        self.moves_label.config(text=f"Ходы: {self.moves}")
 
         if btn1.card_value == btn2.card_value:
             btn1.is_matched = True
