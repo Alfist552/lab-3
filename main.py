@@ -203,6 +203,18 @@ class Memory:
 
         print(f"Подготовлено {len(self.cards)} карточек ({self.total_pairs} пар)")
 
+    def card_click(self, row, col):
+        btn = self.card_buttons[row][col]
+
+        if btn.is_flipped or btn.is_matched:
+            return
+
+        btn.config(image=btn.card_image)
+        btn.is_flipped = True
+        self.flipped_cards.append((row,col))
+
+        self.check_match()
+
     def start_new_game(self):
         try:
             print("Начало игры")
