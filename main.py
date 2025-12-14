@@ -84,30 +84,22 @@ class Memory:
 
             while True:
                 front_path = os.path.join("cards", f"card_{card_number}.png")
-                if not os.path.exists(front_path):
-                    if card_number == 1:
-                        print("Не найдены карточки")
-
-                    messagebox.showerror(
-                        "Не найдены изображения карточек"
-                    )
-                    self.use_images = False
-                    return
+                if os.path.exists(front_path):
+                    try:
+                        img = Image.open(front_path)
+                        img = img.resize((80, 80))
+                        tk_img = ImageTk.PhotoImage(img)
+                        self.card_images.append(tk_img)
+                        card_number += 1
+                    except Exception as e:
+                        print("Ошибка загрузки")
+                        card_number += 1
                 else:
-                    print(f"Найдено {len(self.card_images)} картинок")
+                    print(f"Картинка {card_number} не найдена")
                     break
-            try:
-                img = Image.open(front_path)
-                img = img.resize((80, 80))
-                tk_img = ImageTk.PhotoImage(img)
-                self.card_images.append(tk_img)
-                card_number += 1
-            except Exception as e:
-                print("Ошибка загрузки")
-                card_number += 1
 
 
-            min_pairs_needed = (6*6) // 2
+            min_pairs_needed = (self.grid_size * self.grid_size) // 2
 
             if len(self.card_images) < min_pairs_needed:
                 print(f"Недостаточно картинок")
@@ -115,21 +107,21 @@ class Memory:
                 messagebox.showwarning(
                     "Мало картинок"
                 )
-
-            print(f"Загружено {len(self.card_images)} картинок")
-            self.use_images = True
+                self.use_images = False
+            else:
+                print(f"Загружено {len(self.card_images)} картинок")
+                self.use_images = True
 
         except Exception as e:
             print("Ошибка")
             messagebox.showerror("Ошибка загрузки", e)
-
             self.use_images = False
 
     def interface(self):
         try:
             print('Создание интерфейса')
-            main_frame = tk.Frame(self.root, padding = '10')
-            main_frame.pack(fill = tk.BOTH, expand = True)
+            main_frame = tk.Frame(self.root)
+            main_frame.pack(fill = tk.BOTH, expand = True, padx = 10, pady = 10)
 
             title = ttk.Label(
                 main_frame,
@@ -140,10 +132,12 @@ class Memory:
 
             if self.use_images:
                 mode_text = f"Режим картинки: ({len(self.card_images)} доступно)"
+            else:
+                mode_text = "Картинки не загружены"
 
             mode_label = ttk.Label(
                 main_frame,
-                text=mode_text,
+                text= mode_text,
                 font = ("Arial", 12)
             )
             mode_label.pack(pady = 10)
@@ -160,7 +154,9 @@ class Memory:
 
             if self.use_images:
                 info = f"Игра {self.grid_size} * {self.grid_size}"
-
+            else:
+                print("Недостаточно картинок")
+                return
             print (f" {info}")
 
         except Exception as e:
@@ -174,6 +170,9 @@ class Memory:
             self.root.destroy()
         except Exception as e:
             print("Ошибка закрытия игры")
+
+    def on_closing(self):
+        self.closing_game()
 
     def show_error_message(self, *args):
         str_args = [str(arg) for arg in args]
