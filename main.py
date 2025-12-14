@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import random
 import os
 from PIL import Image, ImageTk
 import sys
@@ -42,14 +41,32 @@ class Memory:
 
         except Exception as e:
             print("Ошибка инициализации")
-            self.show_error_mesage("initialize_variables", e)
+            self.show_error_message("initialize_variables", e)
 
     def load_card_images(self):
         try:
             print("Загрузка изображений")
 
+            if not os.path.exists("cards"):
+                print("Папка не найдена")
+                messagebox.showerror(
+                    "Ошибка загрузки картинок"
+                )
+                self.use_images = False
+                return
+
             back_path = os.path.join("cards", "card_back.png")
-            if os.path.exists(back_path):
+
+            if not os.path.exists(back_path):
+                print("Не найден файл")
+
+                messagebox.showerror(
+                    "Ошибка загрузки картинок"
+                )
+                self.card_back_image = None
+                self.use_images = False
+                return
+            else:
                 try:
                     img = Image.open(back_path)
                     img = img.resize((80, 80))
@@ -57,37 +74,56 @@ class Memory:
                     print("Загружено")
                 except Exception as e:
                     print(f"Не удалось загрузить карточку: {e}")
-            else:
-                print("файл не найден в папке")
-                self.card_back_image = None
 
-        self.card_images = []
-        card_number = 1
-        loaded_count = 0
+                    self.card_back_image = None
+                    self.use_images = False
+                    return
 
-        while loaded_count < 50:
-            front_path = os.path.join("cards", f"card_{card_number}.png")
-            if not os.path.exists(front_path):
-                break
+            self.card_images = []
+            card_number = 1
 
+            while True:
+                front_path = os.path.join("cards", f"card_{card_number}.png")
+                if not os.path.exists(front_path):
+                    if card_number == 1:
+                        print("Не найдены карточки")
+
+                    messagebox.showerror(
+                        "Не найдены изображения карточек"
+                    )
+                    self.use_images = False
+                    return
+                else:
+                    print(f"Найдено {len(self.card_images)} картинок")
+                    break
             try:
                 img = Image.open(front_path)
                 img = img.resize((80, 80))
                 tk_img = ImageTk.PhotoImage(img)
                 self.card_images.append(tk_img)
-                loaded_count += 1
                 card_number += 1
             except Exception as e:
                 print("Ошибка загрузки")
-                break
+                card_number += 1
 
 
-        if len(self.card_images) > 0:
+            min_pairs_needed = (6*6) // 2
+
+            if len(self.card_images) < min_pairs_needed:
+                print(f"Недостаточно картинок")
+
+                messagebox.showwarning(
+                    "Мало картинок"
+                )
+
+            print(f"Загружено {len(self.card_images)} картинок")
             self.use_images = True
-            print (f" Загружено {len(self.card_images)} изображений")
-        else:
-            self.use_images = False
 
+        except Exception as e:
+            print("Ошибка")
+            messagebox.showerror("Ошибка загрузки", e)
+
+            self.use_images = False
 
     def interface(self):
         try:
@@ -105,7 +141,7 @@ class Memory:
             if self.use_images:
                 mode_text = f"Режим картинки: ({len(self.card_images)} доступно)"
 
-            mode_label = ttk.label(
+            mode_label = ttk.Label(
                 main_frame,
                 text=mode_text,
                 font = ("Arial", 12)
@@ -139,8 +175,13 @@ class Memory:
         except Exception as e:
             print("Ошибка закрытия игры")
 
+    def show_error_message(self, *args):
+        str_args = [str(arg) for arg in args]
+        message = ' '.join(str_args)
+        print(f'Ошибка: {message}')
 
-def main()
+
+def main():
     try:
         print("="*50)
         print("Игра Memory")
