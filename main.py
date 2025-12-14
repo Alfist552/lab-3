@@ -140,7 +140,7 @@ class Memory:
                 main_frame,
                 text="Начать игру",
                 font=("Arial", 20),
-                bg="green",
+                bg="purple",
                 fg="white",
                 width=20,
                 height=2,
