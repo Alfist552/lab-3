@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
+import random
 from PIL import Image, ImageTk
 import sys
 
@@ -189,6 +190,18 @@ class Memory:
         except Exception as e:
             print(f"Ошибка создания игрового поля: {e}")
             self.show_error_message("create_game_board", e)
+
+    def prepare_cards(self):
+        self.total_pairs = (self.grid_size * self.grid_size) // 2
+        available_cards = min(self.total_pairs, len(self.card_images))
+        card_values = list(range(available_cards)) * 2
+        if len(card_values) < self.grid_size * self.grid_size:
+            while len(card_values) < self.grid_size * self.grid_size:
+                card_values.append(random.randint(0, available_cards - 1))
+        random.shuffle(card_values)
+        self.cards = card_values
+
+        print(f"Подготовлено {len(self.cards)} карточек ({self.total_pairs} пар)")
 
     def start_new_game(self):
         try:
