@@ -126,7 +126,7 @@ class Memory:
             title = ttk.Label(
                 main_frame,
                 text = 'Игра "Memory"',
-                font = ("Arial", 24, "bold")
+                font = ("Arial", 18, "bold")
             )
             title.pack(pady = 20)
 
@@ -148,12 +148,55 @@ class Memory:
             print("Ошибка создания интерфейса")
             self.show_error_message("interface", e)
 
+    def create_game_board(self):
+        try:
+            if not self.use_images:
+                return
+
+            print("Создание игрового поля...")
+
+            game_frame = tk.Frame(self.root)
+            game_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+            self.prepare_cards()
+
+            self.card_buttons = []
+            for row in range(self.grid_size):
+                row_buttons = []
+                for col in range(self.grid_size):
+                    index = row * self.grid_size + col
+                    card = self.cards[index]
+                    btn = tk.Button(
+                        game_frame,
+                        image=self.card_back_image,
+                        width=80,
+                        height=80,
+                        command=lambda r=row, c=col: self.card_click(r, c)
+                    )
+                    btn.grid(row=row, column=col, padx=2, pady=2)
+
+                    btn.card_image = self.card_images[card] if self.use_images else None
+                    btn.card_value = card
+                    btn.is_flipped = False
+                    btn.is_matched = False
+
+                    row_buttons.append(btn)
+
+                self.card_buttons.append(row_buttons)
+
+                print(f"Создано поле {self.grid_size}x{self.grid_size}")
+
+        except Exception as e:
+            print(f"Ошибка создания игрового поля: {e}")
+            self.show_error_message("create_game_board", e)
+
     def start_new_game(self):
         try:
             print("Начало игры")
 
             if self.use_images:
                 info = f"Игра {self.grid_size} * {self.grid_size}"
+                self.create_game_board()
             else:
                 print("Недостаточно картинок")
                 return
