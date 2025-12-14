@@ -215,6 +215,41 @@ class Memory:
 
         self.check_match()
 
+    def check_match(self):
+        if len(self.flipped_cards) < 2:
+            return
+
+        self.root.after(500, self.do_check_match)
+
+    def do_check_match(self):
+        if len(self.flipped_cards) < 2:
+            return
+
+        row1, col1 = self.flipped_cards[0]
+        row2, col2 = self.flipped_cards[1]
+
+        btn1 = self.card_buttons[row1][col1]
+        btn2 = self.card_buttons[row2][col2]
+
+        self.moves += 1
+
+        if btn1.card_value == btn2.card_value:
+            btn1.is_matched = True
+            btn2.is_matched = True
+            self.matched_pairs += 1
+
+            btn1.config(bg = 'light green')
+            btn2.config(bg = 'light green')
+
+            if self.matched_pairs == self.total_pairs:
+                messagebox.showinfo("Собраны все карточки!", f"Вы выиграли за {self.moves} ходов!")
+        else:
+            btn1.config(image=self.card_back_image)
+            btn2.config(image=self.card_back_image)
+            btn1.is_flipped = False
+            btn2.is_flipped = False
+        self.flipped_cards.clear()
+
     def start_new_game(self):
         try:
             print("Начало игры")
