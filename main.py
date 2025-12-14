@@ -29,6 +29,7 @@ class Memory:
         try:
             self.grid_size = 6
             self.game_active = False
+            self.can_click = True
 
             self.cards = []
             self.flipped_cards = []
@@ -157,7 +158,7 @@ class Memory:
             print("Создание игрового поля...")
 
             game_frame = tk.Frame(self.root)
-            game_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+            game_frame.pack(expand=True)
 
             self.prepare_cards()
 
@@ -204,6 +205,10 @@ class Memory:
         print(f"Подготовлено {len(self.cards)} карточек ({self.total_pairs} пар)")
 
     def card_click(self, row, col):
+
+        if not self.can_click:
+            return
+
         btn = self.card_buttons[row][col]
 
         if btn.is_flipped or btn.is_matched:
@@ -213,13 +218,15 @@ class Memory:
         btn.is_flipped = True
         self.flipped_cards.append((row,col))
 
-        self.check_match()
+        if len(self.flipped_cards) == 2:
+            self.can_click = False
+            self.check_match()
 
     def check_match(self):
         if len(self.flipped_cards) < 2:
             return
 
-        self.root.after(500, self.do_check_match)
+        self.root.after(1000, self.do_check_match)
 
     def do_check_match(self):
         if len(self.flipped_cards) < 2:
@@ -227,6 +234,8 @@ class Memory:
 
         row1, col1 = self.flipped_cards[0]
         row2, col2 = self.flipped_cards[1]
+
+        self.flipped_cards.clear()
 
         btn1 = self.card_buttons[row1][col1]
         btn2 = self.card_buttons[row2][col2]
@@ -241,14 +250,20 @@ class Memory:
             btn1.config(bg = 'light green')
             btn2.config(bg = 'light green')
 
+            self.can_click = True
+
             if self.matched_pairs == self.total_pairs:
                 messagebox.showinfo("Собраны все карточки!", f"Вы выиграли за {self.moves} ходов!")
         else:
-            btn1.config(image=self.card_back_image)
-            btn2.config(image=self.card_back_image)
-            btn1.is_flipped = False
-            btn2.is_flipped = False
-        self.flipped_cards.clear()
+            self.root.after(550, lambda: self.flip_back(btn1, btn2))
+
+    def flip_back(self, btn1, btn2):
+        """Переворачивает карточки обратно и разблокирует клики"""
+        btn1.config(image=self.card_back_image)
+        btn2.config(image=self.card_back_image)
+        btn1.is_flipped = False
+        btn2.is_flipped = False
+        self.can_click = True
 
     def start_new_game(self):
         try:
