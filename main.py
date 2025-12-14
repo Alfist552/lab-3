@@ -12,7 +12,7 @@ class Memory:
         self.setup_window()
         self.initialize_variables()
         self.load_card_images()
-        self.interface()
+        self.show_main_menu()
         self.start_new_game()
 
     def setup_window(self):
@@ -119,36 +119,50 @@ class Memory:
             messagebox.showerror("Ошибка загрузки", e)
             self.use_images = False
 
-    def interface(self):
+    def show_main_menu(self):
         try:
-            print('Создание интерфейса')
-            main_frame = tk.Frame(self.root)
-            main_frame.pack(fill = tk.BOTH, expand = True, padx = 10, pady = 10)
+            for widget in self.root.winfo_children():
+                widget.destroy()
 
-            title = ttk.Label(
+            main_frame = tk.Frame(self.root, bg="lightblue")
+            main_frame.pack(fill=tk.BOTH, expand=True)
+
+            title = tk.Label(
                 main_frame,
-                text = 'Игра "Memory"',
-                font = ("Arial", 18, "bold")
+                text='Игра "Memory"',
+                font=("Arial", 36, "bold"),
+                bg="lightblue",
+                fg="darkblue"
             )
-            title.pack(pady = 20)
+            title.pack(pady=50)
 
-            if self.use_images:
-                mode_text = f"Режим картинки: ({len(self.card_images)} доступно)"
-            else:
-                mode_text = "Картинки не загружены"
-
-            mode_label = ttk.Label(
+            start_btn = tk.Button(
                 main_frame,
-                text= mode_text,
-                font = ("Arial", 12)
+                text="Начать игру",
+                font=("Arial", 20),
+                bg="green",
+                fg="white",
+                width=20,
+                height=2,
+                command=self.start_game_from_menu
             )
-            mode_label.pack(pady = 10)
+            start_btn.pack(pady=20)
 
-            print("Создание интерфейса")
+            rules_btn = tk.Button(
+                main_frame,
+                text="Как играть?",
+                font=("Arial", 20),
+                bg="orange",
+                fg="white",
+                width=20,
+                height=2,
+                command=self.show_rules
+            )
+            rules_btn.pack(pady=20)
 
         except Exception as e:
-            print("Ошибка создания интерфейса")
-            self.show_error_message("interface", e)
+            print(f"Ошибка показа меню: {e}")
+            self.show_error_message("show_main_menu", e)
 
     def create_game_board(self):
         try:
@@ -157,10 +171,46 @@ class Memory:
 
             print("Создание игрового поля...")
 
-            game_frame = tk.Frame(self.root)
-            game_frame.pack(expand=True)
+            for widget in self.root.winfo_children():
+                widget.destroy()
+
+            main_frame = tk.Frame(self.root)
+            main_frame.grid(row=0, column=0, sticky="nsew")
+
+            self.root.grid_rowconfigure(0, weight=1)
+            self.root.grid_columnconfigure(0, weight=1)
+
+            title = tk.Label(
+                main_frame,
+                text='Игра "Memory"',
+                font=("Arial", 24, "bold")
+            )
+            title.grid(row=0, column=0, pady=10, columnspan=self.grid_size)
+
+            self.moves_label = tk.Label(
+                main_frame,
+                text=f"Ходы: {self.moves}",
+                font=("Arial", 14)
+            )
+            self.moves_label.grid(row=1, column=0, pady=5, columnspan=self.grid_size)
+
+            self.game_frame = tk.Frame(main_frame)
+            self.game_frame.grid(row=2, column=0, pady=20, columnspan=self.grid_size)
+
+            menu_btn = tk.Button(
+                main_frame,
+                text="В меню",
+                font=("Arial", 12),
+                command=self.show_main_menu
+            )
+
+            menu_btn.grid(row=3, column=0, pady=10, columnspan=self.grid_size)
 
             self.prepare_cards()
+
+            for i in range(self.grid_size):
+                self.game_frame.grid_rowconfigure(i, weight=1)
+                self.game_frame.grid_columnconfigure(i, weight=1)
 
             self.card_buttons = []
             for row in range(self.grid_size):
@@ -169,7 +219,7 @@ class Memory:
                     index = row * self.grid_size + col
                     card = self.cards[index]
                     btn = tk.Button(
-                        game_frame,
+                        self.game_frame,
                         image=self.card_back_image,
                         width=80,
                         height=80,
